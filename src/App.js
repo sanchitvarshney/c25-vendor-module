@@ -7,7 +7,6 @@ import {
   Link,
   useSearchParams,
 } from "react-router-dom";
-import Sidebar from "./Components/Sidebar";
 import Rout from "./Routes/Routes";
 import { useSelector, useDispatch } from "react-redux/es/exports";
 import "./axiosInterceptor";
@@ -21,30 +20,11 @@ import {
   setUser,
   setSession,
 } from "./Features/loginSlice.js/loginSlice";
-import UserMenu from "./Components/UserMenu";
-import Logo from "./Components/Logo";
 import socket from "./Components/socket.js";
 import Notifications from "./Components/Notifications";
-import Layout, { Content, Header } from "antd/lib/layout/layout";
-import { Badge, Row, Select, Space, Switch, notification } from "antd";
-import { AiOutlineFund } from "react-icons/ai";
-// icons import
-import {
-  MessageOutlined,
-  BellFilled,
-  StarFilled,
-  StarOutlined,
-  MenuOutlined,
-  UserOutlined,
-  LoadingOutlined,
-  SlidersOutlined,
-  CalculatorOutlined,
-  MinusOutlined,
-  RadiusBottomrightOutlined,
-  CopyOutlined,
-  UnorderedListOutlined,
-} from "@ant-design/icons";
-import InternalNav from "./Components/InternalNav";
+import AppShell from "./Components/Shell/AppShell";
+import ContentPasteSearchIcon from "@mui/icons-material/ContentPasteSearch";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import showToast from "./Components/MyToast";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -73,94 +53,6 @@ const App = () => {
   const [testPage, setTestPage] = useState(false);
   const notificationsRef = useRef();
   const [searchParams, setSearchParams] = useSearchParams();
-  function getItem(label, key, icon, children) {
-    return {
-      key,
-      icon,
-      children,
-      label,
-    };
-  }
-  const items = [
-    // getItem(
-    //   <Link to="/finance/payments">Finance</Link>,
-    //   "F",
-    //   <WalletOutlined />
-    // ),
-    // getItem("Requests", "A", <SlidersOutlined />, [
-    //   getItem(
-    //     <Link to="/requests/pending">Pending Requests</Link>,
-    //     "/requests/requests/pending"
-    //     // <MinusOutlined />
-    //   ),
-    //   getItem(
-    //     <Link to="/requests/pending">Transfer Requests</Link>,
-    //     "/requests/requests/transfer"
-    //     // <MinusOutlined />
-    //   ),
-    //   getItem(
-    //     <Link to="/requests/completed">Completed Requests</Link>,
-    //     "/requests/requests/completed"
-    //     // <MinusOutlined />
-    //   ),
-    // ]),
-    // getItem(
-    //   <Link to="/rm_consumption">RM Consumption</Link>,
-    //   "/rm_consumption",
-    //   <MinusOutlined />
-    // ),
-    // getItem(
-    //   <Link to="/PhysicalStock">Physical Stock</Link>,
-    //   "/PhysicalStock",
-    //   <AiOutlineFund />
-    // ),
-    // getItem("SFG", "B", <RadiusBottomrightOutlined />, [
-    //   getItem(
-    //     <Link to="/sfg/create">Create</Link>,
-    //     "/sfg/create"
-    //     // <MinusOutlined />
-    //   ),
-    //   getItem(
-    //     <Link to="/sfg/view">View SFG</Link>,
-    //     "/sfg/create"
-    //     // <MinusOutlined />
-    //   ),
-    // ]),
-    // getItem("Reports", "C", <CalculatorOutlined />, [
-    //   getItem(
-    //     <Link to="/reports/rm_stock">RM Stock</Link>,
-    //     "/reports/rm_stock"
-    //     // <MinusOutlined />
-    //   ),
-    //   getItem(
-    //     <Link to="/vr01">VR01</Link>
-    //     // <MinusOutlined />
-    //   ),
-    //   getItem(
-    //     <Link to="/vr02">VR02</Link>
-    //     // <MinusOutlined />
-    //   ),
-    //   getItem(
-    //     <Link to="/vr03">VR03</Link>
-    //     // <MinusOutlined />
-    //   ),
-    // ]),
-    getItem(
-      <Link to="/jobwork-analysis">Job work Analysis</Link>,
-      "/rm_consumption",
-      <CopyOutlined />
-    ),
-       getItem(
-      <Link to="/jobwork-inventory-report">Job Work Inventory Report</Link>,
-      "/jobwork-inventory-report",
-      <UnorderedListOutlined />
-    ),
-  ];
-  const items1 = [
-    // getItem(<Link to="/myprofile">Profile</Link>, "B", <UserOutlined />),
-    // getItem(<Link to="/messenger">Messenger</Link>, "C", <MessageOutlined />),
-  ];
-
   const logoutHandler = async () => {
     try {
       if (user?.token) {
@@ -508,8 +400,30 @@ const App = () => {
     dispatch(setSession(value));
   };
 
+  const navItems = [
+    { label: "Job Work Analysis", to: "/jobwork-analysis", icon: <ContentPasteSearchIcon /> },
+    { label: "Job Work Inventory Report", to: "/jobwork-inventory-report", icon: <Inventory2OutlinedIcon /> },
+  ];
+  const sessionList = sessionOptions.map((o) => ({
+    value: o.value,
+    label: o.label ?? o.value,
+  }));
+  const currentSession = user?.session || getCurrentFinancialYearSession();
+  if (!sessionList.some((o) => o.value === currentSession)) {
+    sessionList.push({ value: currentSession, label: currentSession });
+  }
+  const pageNotifications = notifications.filter((not) => not?.type !== "message");
+
+  const routes = (
+    <Routes>
+      {Rout.map((route, index) => (
+        <Route key={index} path={route.path} element={<route.main />} />
+      ))}
+    </Routes>
+  );
+
   return (
-    <div style={{ height: "100vh" }}>
+    <>
       <ToastContainer
         position="top-right"
         autoClose={1500}
@@ -521,249 +435,45 @@ const App = () => {
         pauseOnFocusLoss
         pauseOnHover
       />
-      <Layout
-        style={{
-          width: "100%",
-          top: 0,
-        }}
-      >
-        {/* header start */}
-        {user && (
-          <Layout style={{ height: "100%" }}>
-            <Header
-              style={{
-                zIndex: 4,
-                height: 45,
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Row style={{ width: "100%" }} justify="space-between">
-                <Space size="large">
-                  <MenuOutlined
-                    onClick={() => {
-                      setShowSideBar((open) => !open);
-                    }}
-                    style={{
-                      color: "white",
-                      marginLeft: 12,
-                      fontSize: window.innerWidth > 1600 && "1rem",
-                    }}
-                  />
-
-                  <Space
-                    style={{
-                      color: "white",
-                      fontSize: "1rem",
-                    }}
-                  >
-                    <Logo />
-                    IMS
-                  </Space>
-                  {/* <div className="location-select">
-                    <Select
-                      style={{ width: 200, color: "white" }}
-                      options={options}
-                      bordered={false}
-                      value="BRMSC012"
-                    />
-                  </div> */}
-                   <div className="location-select">
-                    <Select
-                      style={{ width: 200, color: "white" }}
-                      options={sessionOptions}
-                      bordered={false}
-                      placeholder="Select Session"
-                      onChange={(value) => handleSelectSession(value)}
-                      value={user.session || getCurrentFinancialYearSession()}
-                    />
-                  </div>
-                </Space>
-                <Space
-                  size="large"
-                  style={{
-                    position: "relative",
-                  }}
-                >
-                  {user.type && user.type.toLowerCase() === "developer" && (
-                    <Switch
-                      loading={testToggleLoading}
-                      checked={testPage}
-                      onChange={(value) => handleChangePageStatus(value)}
-                      checkedChildren="Test"
-                      unCheckedChildren="Live"
-                    />
-                  )}
-
-                  {/* <div>
-                    <Badge
-                      size="small"
-                      style={{
-                        background: notifications.filter(
-                          (not) => not?.loading || not?.status === "pending"
-                        )[0]
-                          ? "#EAAE0F"
-                          : "green",
-                      }}
-                      count={
-                        notifications.filter((not) => not?.type !== "message")
-                          ?.length
-                      }
-                    >
-                      <BellFilled
-                        onClick={() => setShowNotifications((n) => !n)}
-                        style={{
-                          fontSize: 18,
-                          color: "white",
-                          // marginRight: 8,
-                        }}
-                      />
-                    </Badge>
-                    {showNotifications && (
-                      <Notifications
-                        source={"notifications"}
-                        showNotifications={showNotifications}
-                        notifications={notifications.filter(
-                          (not) => not?.type !== "message"
-                        )}
-                        deleteNotification={deleteNotification}
-                      />
-                    )}
-                  </div>
-                  <div>
-                    {/* <Badge
-                      size="small"
-                      count={
-                        notifications.filter((not) => not?.type === "message")
-                          .length
-                      }
-                    >
-                      <MessageOutlined
-                        onClick={() => setShowMessageDrawer(true)}
-                        style={{
-                          fontSize: 18,
-                          cursor: "pointer",
-                          color: "white",
-                        }}
-                      />
-                    </Badge> */}
-                  {/* </div> */}
-                  <div>
-                    <Badge
-                      size="small"
-                      style={{
-                        background: notifications.filter(
-                          (not) => not?.loading || not?.status === "pending"
-                        )[0]
-                          ? "#EAAE0F"
-                          : "green",
-                      }}
-                      count={
-                        notifications.filter((not) => not?.type !== "message")
-                          ?.length
-                      }
-                    >
-                      <BellFilled
-                        onClick={() => setShowNotifications((n) => !n)}
-                        style={{
-                          fontSize: 18,
-                          color: "white",
-                          // marginRight: 30,
-                        }}
-                      />
-                    </Badge>
-                    {showNotifications && (
-                      <Notifications
-                        source={"notifications"}
-                        showNotifications={showNotifications}
-                        notifications={notifications.filter(
-                          (not) => not?.type !== "message"
-                        )}
-                        deleteNotification={deleteNotification}
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <Badge
-                      size="small"
-                      count={
-                        notifications.filter((not) => not?.type == "message")
-                          .length
-                      }
-                    >
-                      <MessageOutlined
-                        onClick={() => setShowMessageDrawer(true)}
-                        style={{
-                          fontSize: 18,
-                          cursor: "pointer",
-                          color: "white",
-                          // marginRight: 90,
-                        }}
-                      />
-                    </Badge>
-                  </div>
-                  <UserMenu user={user} logoutHandler={logoutHandler} />
-                </Space>
-              </Row>
-            </Header>
-          </Layout>
-        )}
-        {/* header ends */}
-        {/* sidebar starts */}
-        <Layout style={{ height: "100%" }}>
-          {user && (
-            <Sidebar
-              items={items}
-              items1={items1}
-              className="site-layout-background"
-              key={1}
-              setShowSideBar={setShowSideBar}
-              showSideBar={showSideBar}
-            />
+      {user ? (
+        <AppShell
+          user={user}
+          navItems={navItems}
+          session={currentSession}
+          sessionOptions={sessionList}
+          onSessionChange={handleSelectSession}
+          onLogout={logoutHandler}
+          notificationCount={pageNotifications.length}
+          notificationPending={notifications.some(
+            (not) => not?.loading || not?.status === "pending"
           )}
-          {/* sidebar ends */}
-          <Layout
-            onClick={() => {
-              setShowNotifications(false);
-              setShowMessageNotifications(false);
+          notificationsNode={
+            <Notifications
+              source={"notifications"}
+              showNotifications={true}
+              notifications={pageNotifications}
+              deleteNotification={deleteNotification}
+            />
+          }
+          showTestSwitch={user.type && user.type.toLowerCase() === "developer"}
+          testPage={testPage}
+          testLoading={testToggleLoading}
+          onTestChange={handleChangePageStatus}
+        >
+          <div
+            style={{
+              opacity: testPage ? 0.5 : 1,
+              pointerEvents: testPage ? "none" : "all",
             }}
-            style={{ height: "100%" }}
           >
-            <Content style={{ height: "100%" }}>
-              <InternalNav links={internalLinks} />
-
-              <div
-                style={{
-                  height: "calc(100vh - 50px)",
-                  width: "100%",
-                  opacity: testPage ? 0.5 : 1,
-                  pointerEvents: testPage ? "none" : "all",
-
-                  overflowX: "hidden",
-                }}
-              >
-                {/* <MessageModal
-                  showMessageDrawer={showMessageDrawer}
-                  setShowMessageDrawer={setShowMessageDrawer}
-                /> */}
-                <Routes>
-                  {Rout.map((route, index) => (
-                    <Route
-                      key={index}
-                      path={route.path}
-                      element={<route.main />}
-                    />
-                  ))}
-                </Routes>
-              </div>
-            </Content>
-          </Layout>
-        </Layout>
-      </Layout>
-    </div>
+            {routes}
+          </div>
+        </AppShell>
+      ) : (
+        routes
+      )}
+    </>
   );
 };
 
 export default App;
-//

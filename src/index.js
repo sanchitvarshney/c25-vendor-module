@@ -6,6 +6,9 @@ import { Provider } from "react-redux";
 import { Store } from "./Features/Store";
 import "./index.css";
 import { ConfigProvider } from "antd";
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import muiTheme from "./theme";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const theme = {
@@ -64,11 +67,14 @@ const theme = {
 };
 
 root.render(
-  <ConfigProvider theme={theme}>
-    <Provider store={Store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Provider>
-  </ConfigProvider>
+  <ThemeProvider theme={muiTheme}>
+    <CssBaseline />
+    <ConfigProvider theme={theme}>
+      <Provider store={Store}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Provider>
+    </ConfigProvider>
+  </ThemeProvider>
 );

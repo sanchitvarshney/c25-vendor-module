@@ -1,51 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
-import { Col, Form, Input, Row,
-  Card,
-  Modal,
-  Space,
-  Checkbox, } from "antd";
-import { imsAxios } from "../../axiosInterceptor";
-import { v4 } from "uuid";
-import socket from "../../Components/socket";
-import MyAsyncSelect from "../../Components/MyAsyncSelect";
-import MyDatePicker from "../../Components/MyDatePicker";
-import { downloadCSV } from "../../Components/exportToCSV";
-import ToolTipEllipses from "../../Components/ToolTipEllipses";
+import { Button, CircularProgress, Paper, Stack } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import { GridActionsCellItem } from "@mui/x-data-grid";
-import { CommonIcons } from "../../Components/TableActions.jsx/TableActions";
-import { downloadFunction } from "../../Components/printFunction";
-import MySelect from "../../Components/MySelect";
-import MyButton from "../../Components/MyButton";
-import MyDataTable from "../../Components/MyDataTable";
+import { imsAxios } from "../../axiosInterceptor";
+import { downloadCSV } from "../../Components/exportToCSV";
+import { downloadFunction, printFunction } from "../../Components/printFunction";
+import DateRangeField from "../../Components/ui/DateRangeField";
+import DataGridTable from "../../Components/ui/DataGridTable";
+import CellText from "../../Components/ui/CellText";
+import PageHeader from "../../Components/ui/PageHeader";
 import ViewModal from "./ViewModal";
-import {printFunction} from '../../Components/printFunction';
-
 
 const POAnalysis = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [closeModalOpen, setCloseModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [updateModalInfo, setUpdateModalInfo] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [selectedRow, setSelectedRow] = useState("");
-  const [advancedFilter, setAdvancedFilter] = useState(false);
   const [advancedDate, setAdvancedDate] = useState("");
+  const vendor = localStorage.getItem("vendor");
 
-  const [filterForm] = Form.useForm();
-  const [passwordForm] = Form.useForm();
-  const wise = Form.useWatch("wise", filterForm);
-const vendor = localStorage.getItem("vendor");
   const getRows = async () => {
-    const values = await filterForm.validateFields();
     const payload = {
-      // data: values.value,
       wise: "vendorwise",
       advanced: true,
       dateRange: advancedDate,
-      data:vendor,
+      data: vendor,
     };
     setLoading("fetch");
     const response = await imsAxios.post("/jobwork/jw_analysis", payload);
@@ -72,25 +52,15 @@ const vendor = localStorage.getItem("vendor");
       } else {
         toast.error(data.message.msg);
       }
-    } else {
     }
     setRows(arr);
   };
 
-  const handleSocketDownload = async () => {
-    const values = await filterForm.validateFields();
-    const payload = {
-      vendor: values.value,
-      notificationId: v4(),
-    };
-    socket.emit("jw_analysis", payload);
-  };
   const handlePrint = async (jwId, action) => {
-    const payload = {
-      transaction: jwId,
-    };
     setLoading("print");
-    const response = await imsAxios.post("/jobwork/print_jw_analysis", payload);
+    const response = await imsAxios.post("/jobwork/print_jw_analysis", {
+      transaction: jwId,
+    });
     setLoading(false);
     const { data } = response;
     if (data) {
@@ -100,43 +70,15 @@ const vendor = localStorage.getItem("vendor");
         downloadFunction(data.data.buffer.data, jwId);
       }
     } else {
-      toast.error(data.message.msg);
+      toast.error("Something went wrong");
     }
   };
-  const askPassword = () => {
-    // <Modal
-  };
-  const vendorLogin = async () => {
-    setConfirmLoading(true);
-    const values = await passwordForm.validateFields();
-    let vencode = selectedRow.vendor.split("( ")[1].split(" )")[0];
-    const response = await imsAxios.post("/auth/redirectVendor", {
-      currentPassword: values.password,
-      vendorCode: vencode,
-    });
-    const { data } = response;
-    setConfirmLoading(true);
-    if (response.status === 200) {
-      const link = `https://oakter.vendor.mscorpres.co.in/requests/pending?token=${data.redirectToken}`;
-      window.open(link, "_blank");
-      setConfirmLoading(false);
-      setOpen(false);
-      passwordForm.resetFields();
-    } else {
-      toast.error(response.data);
-      setConfirmLoading(false);
-    }
-    // navigate("");
-  };
-  useEffect(() => {
-    if (wise !== "datewise") {
-      filterForm.setFieldValue("value", "");
-    }
-  }, [wise]);
+
   const actionColumn = {
     headerName: "",
+    field: "actions",
     type: "actions",
-    width: 30,
+    width: 40,
     getActions: ({ row }) => [
       <GridActionsCellItem
         showInMenu
@@ -156,247 +98,96 @@ const vendor = localStorage.getItem("vendor");
       />,
     ],
   };
-  const getRowinModal = (row) => {
-    setOpen(true);
-    setSelectedRow(row);
-  };
-
-  const selectedWise = filterForm.getFieldValue("wise");
 
   return (
-    <Row gutter={6} style={{ height: "90%", padding: 10 }}>
-      <Col span={4}>
-        <Row gutter={[0, 6]}>
-          <Col span={24}>
-            <Card size="small" title="Filters">
-              <Form
-                initialValues={initialValues}
-                layout="vertical"
-                form={filterForm}
-              >
-                {/* <Form.Item label="Select Wise" name="wise">
-                  <MySelect options={wiseOptions} labelInValue />
-                </Form.Item>
-                {valueInput(wise, filterForm)} */}
-
-                {/* <Form.Item
-                  label="Advanced Filter"
-                  name="advancedFilter"
-                  className=""
-                >
-                  <Checkbox
-                    onChange={(e) => setAdvancedFilter(e.target.checked)}
-                  />
-                </Form.Item> */}
-
-                {/* {selectedWise?.value !== "datewise" && advancedFilter && ( */}
-                  <Form.Item label="Select Date" name="wise">
-                  <MyDatePicker
-                    setDateRange={(value) => setAdvancedDate(value)}
-                  />
-                </Form.Item>
-                {/* )} */}
-
-              </Form>
-              <Row justify="end">
-                <Space>
-                  <CommonIcons
-                    action="downloadButton"
-                    onClick={() =>
-                      downloadCSV(rows, columns, "PO Analysis Report")
-                    }
-                    disabled={rows.length == 0}
-                  />
-                </Space>
-                <Space>
-                  {wise?.value === "vendorwise" && (
-                    <CommonIcons
-                      action="downloadButton"
-                      onClick={handleSocketDownload}
-                    />
-                  )}{" "}
-                  <MyButton variant="search" type="primary" onClick={getRows}>
-                    Fetch
-                  </MyButton>
-                </Space>
-              </Row>
-            </Card>
-          </Col>
-        </Row>
-      </Col>
-      <Col span={20}>
-        <MyDataTable
+    <>
+      <PageHeader
+        title="Job Work Analysis"
+        subtitle="Job work orders raised against your account"
+        actions={
+          <Button
+            variant="outlined"
+            startIcon={<FileDownloadOutlinedIcon />}
+            disabled={rows.length === 0}
+            onClick={() => downloadCSV(rows, columns, "PO Analysis Report")}
+          >
+            Export CSV
+          </Button>
+        }
+      />
+      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+        <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ md: "flex-start" }}>
+          <DateRangeField setDateRange={setAdvancedDate} />
+          <Button
+            variant="contained"
+            sx={{ height: 40, minWidth: 110 }}
+            startIcon={loading === "fetch" ? <CircularProgress size={16} color="inherit" /> : <SearchIcon />}
+            disabled={loading === "fetch" || !advancedDate}
+            onClick={getRows}
+          >
+            Fetch
+          </Button>
+        </Stack>
+      </Paper>
+      <div style={{ height: "calc(100vh - 290px)", minHeight: 360 }}>
+        <DataGridTable
           loading={loading === "fetch" || loading === "print"}
           columns={[actionColumn, ...columns]}
-          data={rows}
-          width="100%"
+          rows={rows}
         />
-      </Col>
-      <ViewModal
-        setViewModalOpen={setViewModalOpen}
-        viewModalOpen={viewModalOpen}
-      />
-      <Modal
-        title="Confirm Password"
-        open={open}
-        onOk={() => vendorLogin()}
-        onCancel={() => setOpen(false)}
-        okText="Okay"
-        cancelText="Back"
-        confirmLoading={confirmLoading}
-      >
-        <Form form={passwordForm} layout="vertical">
-          <Form.Item name="password" label="Current Password">
-            <Input.Password placeholder="Enter you Current Password" />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </Row>
+      </div>
+      <ViewModal setViewModalOpen={setViewModalOpen} viewModalOpen={viewModalOpen} />
+    </>
   );
 };
 
 export default POAnalysis;
-const wiseOptions = [
-  {
-    text: "Date",
-    value: "datewise",
-  },
-  {
-    text: "JobWork ID",
-    value: "jw_transaction_wise",
-  },
-  {
-    text: "SKU",
-    value: "jw_sfg_wise",
-  },
-  {
-    text: "Vendor",
-    value: "vendorwise",
-  },
-];
-
-const initialValues = {
-  wise: {
-    label: "JobWork ID",
-    value: "jw_transaction_wise",
-  },
-};
 
 const columns = [
-  {
-    headerName: "#",
-    width: 30,
-    field: "id",
-  },
+  { headerName: "#", width: 50, field: "id" },
   {
     headerName: "Date",
     field: "date",
     width: 150,
-    renderCell: ({ row }) => <ToolTipEllipses text={row.date} />,
+    renderCell: ({ row }) => <CellText text={row.date} />,
   },
   {
     headerName: "Jobwork ID",
     field: "jwId",
-    width: 200,
-    renderCell: ({ row }) => <ToolTipEllipses text={row.jwId} copy={true} />,
+    width: 210,
+    renderCell: ({ row }) => <CellText text={row.jwId} copy />,
   },
   {
     headerName: "Vendor",
     field: "vendor",
     minWidth: 150,
     flex: 1,
-    renderCell: ({ row }) => <ToolTipEllipses text={row.vendor} />,
+    renderCell: ({ row }) => <CellText text={row.vendor} />,
   },
   {
     headerName: "SKU",
     field: "sku",
     width: 150,
-    renderCell: ({ row }) => <ToolTipEllipses text={row.sku} copy={true} />,
+    renderCell: ({ row }) => <CellText text={row.sku} copy />,
   },
   {
     headerName: "Product",
     field: "product",
     minWidth: 150,
     flex: 1,
-    renderCell: ({ row }) => <ToolTipEllipses text={row.product} />,
+    renderCell: ({ row }) => <CellText text={row.product} />,
   },
-  {
-    headerName: "Required Qty",
-    field: "reqQty",
-    width: 150,
-  },
+  { headerName: "Required Qty", field: "reqQty", width: 130 },
   {
     headerName: "Project ID",
     field: "project_name",
     width: 200,
-    renderCell: ({ row }) => (
-      <ToolTipEllipses text={row.project_name} copy={true} />
-    ),
+    renderCell: ({ row }) => <CellText text={row.project_name} copy />,
   },
   {
     headerName: "Project Description",
     field: "project_description",
-    width: 200,
-    renderCell: ({ row }) => (
-      <ToolTipEllipses text={row.project_description} copy={true} />
-    ),
+    width: 220,
+    renderCell: ({ row }) => <CellText text={row.project_description} />,
   },
 ];
-
-const valueInput = (wise, form) => {
-  if (wise?.value === "datewise") {
-    return <DateWise form={form} wise={wise} />;
-  } else if (wise?.value === "jw_transaction_wise") {
-    return <JWIDInput wise={wise} />;
-  } else if (wise?.value === "jw_sfg_wise") {
-    return <SKUSelect wise={wise} />;
-  } 
-};
-
-const DateWise = ({ form, wise }) => (
-  <Form.Item label={wise?.label} name="value">
-    <MyDatePicker
-      setDateRange={(value) => form.setFieldValue("value", value)}
-    />
-  </Form.Item>
-);
-const JWIDInput = ({ wise }) => (
-  <Form.Item label={wise?.label} name="value">
-    <Input />
-  </Form.Item>
-);
-const SKUSelect = ({ wise }) => {
-  const [asyncOptions, setAsyncOptions] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const getSkuOptions = async (search) => {
-    const payload = {
-      search,
-    };
-    setLoading(true);
-    const response = await imsAxios.post(
-      "/backend/getProductByNameAndNo",
-      payload
-    );
-    setLoading(false);
-    let arr = [];
-    const { data } = response;
-    if (data && data.length > 0) {
-      arr = data.map((d) => {
-        return { text: d.text, value: d.id };
-      });
-    }
-    setAsyncOptions(arr);
-  };
-
-  return (
-    <Form.Item label={wise?.label} name="value">
-      <MyAsyncSelect
-        loadOptions={getSkuOptions}
-        optionsState={asyncOptions}
-        onBlur={() => setAsyncOptions([])}
-        selectLoading={loading}
-      />
-    </Form.Item>
-  );
-};
