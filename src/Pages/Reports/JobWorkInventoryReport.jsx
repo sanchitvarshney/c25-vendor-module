@@ -1,240 +1,109 @@
-import  { useState } from "react";
-import { Col, Input, Row, Space } from "antd";
-import MyDatePicker from "../../Components/MyDatePicker";
+import { useState } from "react";
 import { toast } from "react-toastify";
-import MyDataTable from "../../Components/MyDataTable";
-import MySelect from "../../Components/MySelect";
-import { downloadCSV } from "../../Components/exportToCSV";
-import {
-  CommonIcons,
-} from "../../Components/TableActions.jsx/TableActions";
-import ToolTipEllipses from "../../Components/ToolTipEllipses";
+import { Button, CircularProgress, Paper, Stack } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import { imsAxios } from "../../axiosInterceptor";
-import useApi from "../../hooks/useApi";
-import MyButton from "../../Components/MyButton";
+import { downloadCSV } from "../../Components/exportToCSV";
+import DateRangeField from "../../Components/ui/DateRangeField";
+import DataGridTable from "../../Components/ui/DataGridTable";
+import CellText from "../../Components/ui/CellText";
+import PageHeader from "../../Components/ui/PageHeader";
 
 const JobWorkInventoryReport = () => {
-  const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [selectLoading, setSelectLoading] = useState(false);
-  const [asyncOptions, setAsyncOptions] = useState([]);
-  const [searchInput, setSearchInput] = useState("");
-  const [wise, setWise] = useState("date");
   const [rows, setRows] = useState([]);
   const [searchDateRange, setSearchDateRange] = useState("");
-  const { executeFun, loading: loading1 } = useApi();
   const vendor = localStorage.getItem("vendor");
-  const wiseOptions = [
-    { value: "date", text: "Date Wise" },
-    // { value: "jwid", text: "Job Work ID Wise" },
-  ];
 
-  const columns = [
-    {
-      headerName: "#",
-      width: 30,
-      field: "id",
-    },
-    {
-      headerName: "PART ",
-      // minWidth: 80,
-      //   flex: 1,
-      field: "PART",
-      renderCell: ({ row }) => <ToolTipEllipses text={row.PART} />,
-    },
-    {
-      headerName: "Component",
-      width: 350,
-      field: "COMPONENT",
-    },
-    {
-      headerName: "Unit",
-      width: 90,
-      field: "UNIT",
-    },
-    {
-      headerName: "Opening Qty",
-      width: 100,
-      field: "Opening",
-    },
-    {
-      headerName: "Opening Rate",
-      width: 100,
-      field: "OpeningRate",
-    },
-    {
-      headerName: "Opening Value",
-      width: 100,
-      field: "OpeningValue",
-    },
-    {
-      headerName: "Inward Qty",
-      width: 100,
-      field: "Inward",
-    },
-    {
-      headerName: "Inward Rate",
-      width: 100,
-      field: "InwardRate",
-    },
-    {
-      headerName: "Inward Value",
-      width: 100,
-      field: "InwardValue",
-    },
-
-    {
-      headerName: "Outward Qty",
-      width: 110,
-      field: "Outward",
-    },
-    {
-      headerName: "Outward Rate",
-      width: 100,
-      field: "OutwardRate",
-    },
-    {
-      headerName: "Outward Value",
-      width: 100,
-      field: "OutwardValue",
-    },
-    {
-      headerName: "closing Qty",
-      width: 100,
-      field: "closing",
-    },
-    {
-      headerName: "Closing Rate",
-      width: 100,
-      field: "closingRate",
-    },
-    {
-      headerName: "Closing Value",
-      width: 90,
-      field: "closingValue",
-    },
-    
-  ];
-  //getting rows from database from all 3 filter po wise, data wise,
   const getSearchResults = async () => {
     setRows([]);
-    let search;
-    if (wise == "date") {
-      search = searchDateRange;
-    } else {
-      search = null;
+    if (!searchDateRange) {
+      toast.error("Please select start and end dates for the results");
+      return;
     }
-    if (searchInput || (search)) {
-      setSearchLoading(true);
-      const { data,success,message } = await imsAxios.post(
-        "/report37",
-        {
-          data:
-            wise == "jwid"
-              ? searchInput.trim()
-              : wise == "date" && searchDateRange,
-          wise: wise,
-          vendor:vendor
-        }
+    setSearchLoading(true);
+    const { data, success, message } = await imsAxios.post("/report37", {
+      data: searchDateRange,
+      wise: "date",
+      vendor: vendor,
+    });
+    setSearchLoading(false);
+    if (success) {
+      setRows(
+        data?.map((row, index) => ({ ...row, id: index + 1, index: index + 1 })) ?? []
       );
-      setSearchLoading(false);
-      console.log(data)
-      if (success) {
-        let arr = data?.map((row, index) => ({
-          ...row,
-          id: index+1,
-          index: index + 1,
-        }));
-        setRows(arr);
-      } else {
-        if (message) {
-          toast.error(message);
-        } else {
-          toast.error(message);
-        }
-      }
-    } else {
-      if (wise == "date" && searchDateRange == null) {
-        toast.error("Please select start and end dates for the results");
-      } else if (wise == "jwid") {
-        toast.error("Please enter a Job work ID");
-      } 
+    } else if (message) {
+      toast.error(message);
     }
   };
 
   return (
-    <div className="manage-po" style={{ position: "relative", height: "100%" }}>
-      <Row
-        justify="space-between"
-        style={{ padding: "0px 10px", paddingBottom: 5 }}
-      >
-        <Col>
-          <Space>
-            <div style={{ width: 150 }}>
-              <MySelect options={wiseOptions} onChange={setWise} value={wise} />
-            </div>
-            <div style={{ width: 300 }}>
-              {wise === "date" ? (
-                <MyDatePicker
-                  size="default"
-                  setDateRange={setSearchDateRange}
-                  dateRange={searchDateRange}
-                  value={searchDateRange}
-                />
-              ) : (
-                <Input
-                  style={{ width: "100%" }}
-                  type="text"
-                  placeholder="Enter Job Work ID"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                />
-              )}
-            </div>
-            <MyButton
-              disabled={
-                wise === "date"
-                  ? searchDateRange === ""
-                    ? true
-                    : false
-                  : !searchInput
-                  ? true
-                  : false
-              }
-              type="primary"
-              loading={searchLoading}
-              onClick={getSearchResults}
-              id="submit"
-              variant="search"
-            >
-              Search
-            </MyButton>
-          </Space>
-        </Col>
-        <Col>
-          <Space>
-            <CommonIcons
-              action="downloadButton"
-              onClick={() => downloadCSV(rows, columns, "Job Work Inventory Report")}
-              disabled={rows.length == 0}
-            />
-          </Space>
-        </Col>
-      </Row>
-      <div
-        style={{
-          height: "85%",
-          padding: "0 10px",
-        }}
-      >
-        <MyDataTable
-          loading={loading || searchLoading}
-          rows={rows}
-          columns={columns}
-        />
+    <>
+      <PageHeader
+        title="Job Work Inventory Report"
+        subtitle="Opening, inward, outward and closing stock by component"
+        actions={
+          <Button
+            variant="outlined"
+            startIcon={<FileDownloadOutlinedIcon />}
+            disabled={rows.length === 0}
+            onClick={() => downloadCSV(rows, columns, "Job Work Inventory Report")}
+          >
+            Export CSV
+          </Button>
+        }
+      />
+      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+        <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ md: "flex-start" }}>
+          <DateRangeField setDateRange={setSearchDateRange} />
+          <Button
+            variant="contained"
+            sx={{ height: 40, minWidth: 110 }}
+            startIcon={searchLoading ? <CircularProgress size={16} color="inherit" /> : <SearchIcon />}
+            disabled={searchLoading || !searchDateRange}
+            onClick={getSearchResults}
+          >
+            Search
+          </Button>
+        </Stack>
+      </Paper>
+      <div style={{ height: "calc(100vh - 290px)", minHeight: 360 }}>
+        <DataGridTable loading={searchLoading} rows={rows} columns={columns} />
       </div>
-    </div>
+    </>
   );
 };
 
 export default JobWorkInventoryReport;
+
+const qty = (headerName, field, width = 110) => ({ headerName, field, width, align: "right", headerAlign: "right" });
+
+const columns = [
+  { headerName: "#", width: 50, field: "id" },
+  {
+    headerName: "Part",
+    field: "PART",
+    width: 130,
+    renderCell: ({ row }) => <CellText text={row.PART} />,
+  },
+  {
+    headerName: "Component",
+    width: 350,
+    field: "COMPONENT",
+    renderCell: ({ row }) => <CellText text={row.COMPONENT} />,
+  },
+  { headerName: "Unit", width: 90, field: "UNIT" },
+  qty("Opening Qty", "Opening"),
+  qty("Opening Rate", "OpeningRate"),
+  qty("Opening Value", "OpeningValue"),
+  qty("Inward Qty", "Inward"),
+  qty("Inward Rate", "InwardRate"),
+  qty("Inward Value", "InwardValue"),
+  qty("Outward Qty", "Outward"),
+  qty("Outward Rate", "OutwardRate"),
+  qty("Outward Value", "OutwardValue"),
+  qty("Closing Qty", "closing"),
+  qty("Closing Rate", "closingRate"),
+  qty("Closing Value", "closingValue"),
+];
