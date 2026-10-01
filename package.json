@@ -1,0 +1,70 @@
+{
+  "name": "ms-corperes",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@adobe/react-spectrum": "^3.21.1",
+    "@coreui/react": "^4.3.1",
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@mui/material": "^5.10.10",
+    "@mui/x-data-grid": "^5.17.8",
+    "@reduxjs/toolkit": "^1.8.5",
+    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/react": "^13.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "antd": "^5.15.4",
+    "axios": "^0.33.0",
+    "buffer": "^6.0.3",
+    "cdbreact": "^1.5.3",
+    "convert-array-to-csv": "^2.0.0",
+    "dayjs": "^1.11.7",
+    "html-react-parser": "^3.0.4",
+    "install": "^0.13.0",
+    "js-file-download": "^0.4.12",
+    "lottie-react": "^2.3.1",
+    "mdb-react-ui-kit": "^4.1.0",
+    "moment": "^2.29.4",
+    "npm": "^8.19.4",
+    "print-js": "^1.6.0",
+    "react": "^18.2.0",
+    "react-collapsible-tree": "^2.0.0",
+    "react-datepicker": "^4.8.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.4.0",
+    "react-input-mask": "^2.0.4",
+    "react-redux": "^8.0.2",
+    "react-router-dom": "^6.3.0",
+    "react-scripts": "5.0.1",
+    "react-toastify": "^9.0.7",
+    "socket.io-client": "^4.7.4",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build"
+  },
+  "overrides": {
+    "ws": "^8.21.1",
+    "tar": "^6.2.1",
+    "brace-expansion": "^1.1.17"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
