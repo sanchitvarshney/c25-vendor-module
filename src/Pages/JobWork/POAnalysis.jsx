@@ -33,7 +33,7 @@ const POAnalysis = () => {
     setLoading("fetch");
     const response = await imsAxios.post("/jobwork/jw_analysis", payload);
     setLoading(false);
-
+    let arr = [];
     if (response.success) {
       const { data } = response;
       arr = data.map((row, index) => ({
