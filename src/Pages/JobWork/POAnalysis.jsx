@@ -66,12 +66,13 @@ const POAnalysis = () => {
       transaction: jwId,
     });
     setLoading(false);
-    const { data } = response;
-    if (data) {
+   
+    if (response.success) {
+       const { data } = response;
       if (action === "print") {
-        printFunction(data.data.buffer.data);
+        printFunction(data.buffer.data);
       } else {
-        downloadFunction(data.data.buffer.data, jwId);
+        downloadFunction(data.buffer.data, jwId);
       }
     } else {
       toast.error("Something went wrong");

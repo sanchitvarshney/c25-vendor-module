@@ -401,8 +401,8 @@ const App = () => {
   };
 
   const navItems = [
-    { label: "Job Work Analysis", to: "/jobwork-analysis", icon: <ContentPasteSearchIcon /> },
-    { label: "Job Work Inventory Report", to: "/jobwork-inventory-report", icon: <Inventory2OutlinedIcon /> },
+    { label: "Analysis", to: "/jobwork-analysis", icon: <ContentPasteSearchIcon /> },
+    { label: "Inventory Report", to: "/jobwork-inventory-report", icon: <Inventory2OutlinedIcon /> },
   ];
   const sessionList = sessionOptions.map((o) => ({
     value: o.value,

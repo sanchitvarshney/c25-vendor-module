@@ -113,7 +113,7 @@ const links = [
   ],
   [
     {
-      routeName: "Job work Analysis",
+      routeName: "Analysis",
       routePath: "/jobwork-analysis",
       // placeholder: "RM Consumption",
     },

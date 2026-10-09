@@ -34,24 +34,22 @@ const ViewModal = ({ viewModalOpen, setViewModalOpen }) => {
       po_transaction: viewModalOpen.jwId,
     });
     setLoading(false);
-    const { data } = response;
-    if (data) {
-      if (data.code === 200) {
-        data.header.map((a) => setView(a));
-        let arr = data.data.map((row, index) => ({
+   
+
+      if (response.success) {
+         const {  header, data } = response;
+        header.map((a) => setView(a));
+        let arr = data.map((row, index) => ({
           ...row,
           id: v4(),
           index: index + 1,
         }));
         setMainData(arr);
       } else {
-        toast.error(data.message.msg);
+        toast.error(response.message.msg ?? response.message ?? "Something went wrong");
         setViewModalOpen(false);
       }
-    } else {
-      setViewModalOpen(false);
-      toast.error("Something went wrong");
-    }
+  
   };
 
   const altCell = ({ row }) => {
