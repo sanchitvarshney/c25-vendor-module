@@ -6,7 +6,10 @@ import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import { GridActionsCellItem } from "@mui/x-data-grid";
 import { imsAxios } from "../../axiosInterceptor";
 import { downloadCSV } from "../../Components/exportToCSV";
-import { downloadFunction, printFunction } from "../../Components/printFunction";
+import {
+  downloadFunction,
+  printFunction,
+} from "../../Components/printFunction";
 import DateRangeField from "../../Components/ui/DateRangeField";
 import DataGridTable from "../../Components/ui/DataGridTable";
 import CellText from "../../Components/ui/CellText";
@@ -30,29 +33,30 @@ const POAnalysis = () => {
     setLoading("fetch");
     const response = await imsAxios.post("/jobwork/jw_analysis", payload);
     setLoading(false);
-    const { data } = response;
-    let arr = [];
-    if (data) {
-      if (data.code === 200) {
-        arr = data.data.map((row, index) => ({
-          id: index + 1,
-          date: row.date,
-          jwId: row.po_sku_transaction,
-          vendor: row.vendor,
-          sku: row.skucode,
-          product: row.skuname,
-          reqQty: row.requiredqty,
-          status: row.po_status,
-          recipeStatus: row.bom_recipe,
-          poStatus: row.po_status,
-          skuKey: row.sku,
-          project_description: row.project_description,
-          project_name: row.project_name,
-        }));
-      } else {
-        toast.error(data.message.msg);
-      }
+
+    if (response.success) {
+      const { data } = response;
+      arr = data.map((row, index) => ({
+        id: index + 1,
+        date: row.date,
+        jwId: row.po_sku_transaction,
+        vendor: row.vendor,
+        sku: row.skucode,
+        product: row.skuname,
+        reqQty: row.requiredqty,
+        status: row.po_status,
+        recipeStatus: row.bom_recipe,
+        poStatus: row.po_status,
+        skuKey: row.sku,
+        project_description: row.project_description,
+        project_name: row.project_name,
+      }));
+    } else {
+      toast.error(
+        response.message.msg ?? response.message ?? "Something went wrong",
+      );
     }
+
     setRows(arr);
   };
 
@@ -116,12 +120,22 @@ const POAnalysis = () => {
         }
       />
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ md: "flex-start" }}>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={2}
+          alignItems={{ md: "flex-start" }}
+        >
           <DateRangeField setDateRange={setAdvancedDate} />
           <Button
             variant="contained"
             sx={{ height: 40, minWidth: 110 }}
-            startIcon={loading === "fetch" ? <CircularProgress size={16} color="inherit" /> : <SearchIcon />}
+            startIcon={
+              loading === "fetch" ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : (
+                <SearchIcon />
+              )
+            }
             disabled={loading === "fetch" || !advancedDate}
             onClick={getRows}
           >
@@ -136,7 +150,10 @@ const POAnalysis = () => {
           rows={rows}
         />
       </div>
-      <ViewModal setViewModalOpen={setViewModalOpen} viewModalOpen={viewModalOpen} />
+      <ViewModal
+        setViewModalOpen={setViewModalOpen}
+        viewModalOpen={viewModalOpen}
+      />
     </>
   );
 };
